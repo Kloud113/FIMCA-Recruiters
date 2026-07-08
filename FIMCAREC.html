@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIMCA — Recruiter Console</title>
+    <style>
+        /* Premium Dark Mode Variables */
+        :root {
+            --bg-obsidian: #050507;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --fimca-red: #da251d;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient Animated Gradient Background */
+        @keyframes ambientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            background: linear-gradient(-45deg, #050507, #0a0a0f, #050507, #0f0b0b);
+            background-size: 400% 400%;
+            animation: ambientPulse 15s ease infinite;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1.5rem 2rem 4rem 2rem;
+            
+            /* Premium Custom Red Cursor */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4" fill="%23da251d"/></svg>') 8 8, auto;
+        }
+
+        a, button, select, input {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="%23da251d" stroke-width="2"/></svg>') 8 8, pointer !important;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Bold Glass Panel Base */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        /* Bold Header */
+        .admin-nav {
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-lockup {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Logo Blob Fix: Removed white bg, added hidden overflow to perfectly clip the image */
+        .logo-frame {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            overflow: hidden; 
+            border: 1px solid var(--glass-border);
+            background: transparent; 
+        }
+
+        .nav-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover ensures no weird gaps if the image aspect ratio is slightly off */
+        }
+
+        .admin-nav h1 {
+            font-size: 2rem; 
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+        }
+
+        .red-accent {
+            color: var(--fimca-red);
+        }
+
+        /* New Pill Design for the Session */
+        .session-badge {
+            color: var(--fimca-red);
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: rgba(218, 37, 29, 0.08); /* Dark red tint */
+            border: 1px solid rgba(218, 37, 29, 0.4); /* Solid red border */
+            padding: 12px 24px;
+            border-radius: 12px;
+        }
+
+        /* Big & Bold Stats Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-value {
+            font-size: 3.5rem; 
+            font-weight: 900;
+            color: var(--text-main);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        /* Filters */
+        .command-center {
+            padding: 2.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+            align-items: end;
+        }
+
+        .ctrl-group { display: flex; flex-direction: column; }
+        .ctrl-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .ctrl-group input, .ctrl-group select {
+            height: 54px; 
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0 15px;
+            outline: none;
+            transition: var(--transition);
+            font-size: 1.05rem;
+        }
+
+        .ctrl-group input:focus, .ctrl-group select:focus {
+            border-color: var(--text-main);
+        }
+        
+        select option {
+            background-color: var(--bg-obsidian);
+            color: var(--text-main);
+        }
+
+        ::placeholder { color: #475569; }
+
+        .btn-action {
+            background: var(--text-main);
+            color: var(--bg-obsidian);
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            height: 54px;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 1rem;
+        }
+
+        .btn-action:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        /* Big & Bold Data Matrix */
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 1rem 2.5rem 2.5rem 2.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            padding-top: 2rem;
+        }
+
+        td {
+            font-size: 1.1rem; 
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        tr { transition: var(--transition); }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .download-link {
+            color: var(--fimca-red);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+        }
+
+        .download-link:hover {
+            text-shadow: 0 0 10px rgba(218, 37, 29, 0.4);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 900px) {
+            body { padding: 1rem; }
+            .admin-nav { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+            .brand-lockup { flex-direction: column; }
+            .logo-frame { margin-bottom: 10px; }
+            .table-wrapper { padding: 1rem; }
+            
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { display: none; }
+            
+            tr {
+                border: 1px solid var(--glass-border);
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
+                padding: 1rem;
+                background: rgba(0,0,0,0.2);
+            }
+
+            td {
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                position: relative;
+                padding: 12px 10px 12px 45%; 
+                text-align: right;
+            }
+
+            td:last-child { border-bottom: none; }
+
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 40%;
+                white-space: nowrap;
+                text-align: left;
+                font-size: 0.75rem;
+                font-weight: 800;
+                color: var(--text-muted);
+                text-transform: uppercase;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <nav class="glass-panel admin-nav">
+            <div class="brand-lockup">
+                <!-- Repaired Logo Housing -->
+                <div class="logo-frame">
+                    <img src="Logo.jpg" alt="FIMCA Logo" class="nav-logo" onerror="this.style.display='none'">
+                </div>
+                <h1><span class="red-accent">FIMCA</span> Console</h1>
+            </div>
+            <div class="session-badge">Session: Vira International</div>
+        </nav>
+
+        <!-- Stats -->
+        <section class="stats-grid">
+            <div class="glass-panel stat-card">
+                <span class="stat-value" id="total-count">0</span>
+                <span class="stat-label">Candidates Available</span>
+            </div>
+            <div class="glass-panel stat-card">
+                <span class="stat-value">42</span>
+                <span class="stat-label">New Profiles (This Week)</span>
+            </div>
+            <div class="glass-panel stat-card">
+                <span class="stat-value">18</span>
+                <span class="stat-label">Your Downloads</span>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="glass-panel command-center">
+            <div class="ctrl-group">
+                <label>Industry</label>
+                <select id="filter-industry">
+                    <option value="all">All Industries</option>
+                    <option value="Hospitality & Catering">Hospitality & Catering</option>
+                    <option value="Healthcare & Nursing">Healthcare & Nursing</option>
+                    <option value="Engineering & Construction">Engineering & Construction</option>
+                    <option value="IT & Operations">IT & Operations</option>
+                </select>
+            </div>
+            <div class="ctrl-group">
+                <label>City Location</label>
+                <input type="text" id="filter-location" placeholder="e.g. Mumbai">
+            </div>
+            <div class="ctrl-group">
+                <label>Maximum Age</label>
+                <input type="number" id="filter-age" placeholder="e.g. 35">
+            </div>
+            <div class="ctrl-group">
+                <label>Sort By</label>
+                <select id="sort-date">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+            <button class="btn-action" onclick="processData()">Apply Filter</button>
+        </section>
+
+        <!-- Data Matrix -->
+        <section class="glass-panel table-wrapper">
+            <table id="candidate-table">
+                <thead>
+                    <tr>
+                        <th>Date Logged</th>
+                        <th>Full Legal Name</th>
+                        <th>Age</th>
+                        <th>Phone Number</th>
+                        <th>Location</th>
+                        <th>Primary Industry</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Data rendered via JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <script>
+        // Dummy Data generated from the "Can't find a job" form
+        const dummyCandidates = [
+            { id: 1, date: '2026-07-08', name: 'Arjun Desai', age: 28, phone: '+91 9876543210', location: 'Mumbai', industry: 'Hospitality & Catering' },
+            { id: 2, date: '2026-07-07', name: 'Priya Sharma', age: 32, phone: '+91 8765432109', location: 'Delhi', industry: 'Healthcare & Nursing' },
+            { id: 3, date: '2026-07-06', name: 'Rohan Gupta', age: 24, phone: '+91 7654321098', location: 'Mumbai', industry: 'IT & Operations' },
+            { id: 4, date: '2026-07-05', name: 'Mohammed Ali', age: 35, phone: '+91 6543210987', location: 'Hyderabad', industry: 'Engineering & Construction' },
+            { id: 5, date: '2026-07-03', name: 'Sneha Patel', age: 29, phone: '+91 5432109876', location: 'Ahmedabad', industry: 'Healthcare & Nursing' },
+            { id: 6, date: '2026-07-02', name: 'Vikram Singh', age: 41, phone: '+91 4321098765', location: 'Pune', industry: 'Engineering & Construction' }
+        ];
+
+        // Core Render Function
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = ''; 
+
+            data.forEach(candidate => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td data-label="Date Logged">${candidate.date}</td>
+                    <td data-label="Full Legal Name">${candidate.name}</td>
+                    <td data-label="Age">${candidate.age}</td>
+                    <td data-label="Phone Number">${candidate.phone}</td>
+                    <td data-label="Location">${candidate.location}</td>
+                    <td data-label="Primary Industry">${candidate.industry}</td>
+                    <td data-label="Action"><a href="#" class="download-link" onclick="alert('Downloading CV for ${candidate.name}...')">Download CV</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('total-count').innerText = data.length;
+        }
+
+        // Filter and Sort Engine
+        function processData() {
+            let filteredData = [...dummyCandidates];
+
+            const industry = document.getElementById('filter-industry').value;
+            const location = document.getElementById('filter-location').value.toLowerCase().trim();
+            const maxAge = document.getElementById('filter-age').value;
+            const sortOrder = document.getElementById('sort-date').value;
+
+            if (industry !== 'all') {
+                filteredData = filteredData.filter(c => c.industry === industry);
+            }
+            if (location) {
+                filteredData = filteredData.filter(c => c.location.toLowerCase().includes(location));
+            }
+            if (maxAge) {
+                filteredData = filteredData.filter(c => c.age <= parseInt(maxAge));
+            }
+
+            filteredData.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            renderTable(filteredData);
+        }
+
+        window.onload = () => {
+            renderTable(dummyCandidates);
+        };
+    </script>
+</body>
+</html>
